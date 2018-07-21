@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<!-- namespace：命名空间，用于隔离sql语句，后继有重要重要 #{}：点位符，相当于jdbc的? ${}：字符串拼接指令，如果入参为普通数据类型{}内部只写value -->
+<!-- 动态代理开发规则：
+    1、namespace必需是接口的全路径名
+    2、接口的方法名必需与sql id 一致
+    3、接口的入参与parameterType类型一致
+	4、接口的返回值必须与resultType类型一致
+	-->
+<mapper namespace="com.lightwing.mybatis.mapper.UserMapper">
+    <!-- sql片段的抽取，定义 -->
+    <sql id="user_sql">
+		`id`,
+		`username`,
+		`birthday`,
+		`sex`,
+		`address`
+	</sql>
+
+    <!-- id:sql id，语句的唯一标识 parameterType:入参的数据类型 resultType:返回结果的数据类型 -->
+    <select id="getUserById" parameterType="int" resultType="uSEr">
+        SELECT
+        <!-- sql片段使用:refid引用定义好的sql片段id -->
+        <include refid="user_sql"/>
+        FROM `user`
+        WHERE id = #{ id2 };
+    </select>
+
+    <!-- resultType：如果返回结果为集合，只需设置为每一个的数据类型 -->
+    <select id="getUserByUserName" parameterType="string"
+            resultType="com.lightwing.mybatis.pojo.User">
+        SELECT
+        <include refid="user_sql"/>
+        FROM `user`
+        <!-- WHERE username LIKE #{name} -->
+        WHERE username LIKE '%${ value }%'
+    </select>
+
+    <!-- 插入用户 -->
+    <!-- useGeneratedKeys:使用自增 keyProperty与之配套使用，这里是user的主键 -->
+    <insert id="insertUser" parameterType="com.lightwing.mybatis.pojo.User"
+            useGeneratedKeys="true" keyProperty="id">
+        <!-- selectKey：主键返回 keyProperty:user中的主键属性 resultType:主键数据类型 order:指定selectKey何时执行：AFTER之后 -->
+        <!-- <selectKey keyProperty="id" resultType="int" order="AFTER"> SELECT
+            LAST_INSERT_ID() </selectKey> -->
+        INSERT INTO `user`(
+            `username`,
+            `birthday`,
+            `sex`,
+            `address`)
+        VALUES (
+            #{username},
+            #{birthday},
+            #{sex},
+            #{address}
+        );
+    </insert>
+</mapper>
